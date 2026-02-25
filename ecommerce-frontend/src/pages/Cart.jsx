@@ -35,7 +35,7 @@ export default function Cart(){
  /* UPDATE QTY */
  const updateQty=async(id,change)=>{
   try{
-   await API.post("/cart/update",{
+   await API.post("/cart/",{
     productId:id,
     quantity:change
    })
