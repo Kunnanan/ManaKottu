@@ -4,48 +4,48 @@ import "./cart.css"
 import toast from "react-hot-toast"
 
 export default function Cart(){
-useEffect(()=>{
- document.title = "Cart | ManaKottu"
-},[])
- const [cart,setCart]=useState(null)
+
+ useEffect(()=>{
+  document.title="Cart | ManaKottu"
+ },[])
+
+ const [cart,setCart]=useState({items:[]})
  const [loading,setLoading]=useState(true)
 
  /* LOAD CART */
- const loadCart=()=>{
-  API.get("/cart")
-   .then(res=>{
-    setCart(res.data)
-    setLoading(false)
-   })
-   .catch(()=>{
-    toast.error("Failed to load cart")
-    setLoading(false)
-   })
+ const loadCart=async()=>{
+  try{
+   const res=await API.get("/cart")
+
+   const safeItems=(res.data?.items || []).filter(i=>i?.product)
+
+   setCart({items:safeItems})
+  }catch{
+   toast.error("Failed to load cart")
+   setCart({items:[]})
+  }finally{
+   setLoading(false)
+  }
  }
 
  useEffect(()=>{
   loadCart()
  },[])
 
-
-
- /* UPDATE QUANTITY */
+ /* UPDATE QTY */
  const updateQty=async(id,change)=>{
   try{
-   await API.post("/cart",{
+   await API.post("/cart/update",{
     productId:id,
-    qty:change
+    quantity:change
    })
-
    loadCart()
   }catch{
    toast.error("Update failed")
   }
  }
 
-
-
- /* REMOVE ITEM */
+ /* REMOVE */
  const removeItem=async(id)=>{
   try{
    await API.post("/cart/remove",{productId:id})
@@ -56,110 +56,83 @@ useEffect(()=>{
   }
  }
 
-
  /* CHECKOUT */
- const checkout = async()=>{
- if(!cart || cart.items.length===0)
-  return toast.error("Cart empty")
+ const checkout=async()=>{
+  if(!cart.items.length)
+   return toast.error("Cart empty")
 
- try{
+  try{
 
-  const items = cart.items.filter(i=>i.product).map(item=>({
-   product:item.product._id,
-   quantity:item.quantity
-  }))
+   const items=cart.items.map(i=>({
+    product:i.product._id,
+    quantity:i.quantity
+   }))
 
-  const res = await API.post("/orders/create",{items})
+   const res=await API.post("/orders/create",{items})
 
-  toast.success("Order created 🎉 Redirecting to payment...")
+   toast.success("Order created 🎉 Redirecting...")
 
-  const orderId = res.data._id
+   setTimeout(()=>{
+    window.location.href=`/orders/${res.data._id}`
+   },1200)
 
-  setTimeout(()=>{
-   window.location.href = `/orders/${orderId}`
-  },1200)
-
- }catch(err){
-  toast.error(err.response?.data || "Checkout failed")
+  }catch(err){
+   toast.error(err.response?.data || "Checkout failed")
+  }
  }
-}
 
  /* LOADING */
  if(loading)
   return <h2 style={{textAlign:"center"}}>Loading cart...</h2>
 
-
-
  /* EMPTY */
- if(!cart || cart.items.length===0)
+ if(!cart.items.length)
   return <h2 style={{textAlign:"center"}}>Your cart is empty 🛒</h2>
 
-
-
  /* TOTAL */
- const total = cart.items.filter(i=>i.product).reduce(
-  (acc,i)=>acc+i.product.price*i.quantity,
+ const total=cart.items.reduce(
+  (acc,i)=>acc+(i.product?.price||0)*i.quantity,
   0
  )
-
-
 
  return(
   <div className="cart-page">
 
    <h2 className="cart-title">Shopping Cart</h2>
 
-
-
    <div className="cart-container">
 
     {cart.items.map(item=>(
-     <div className="cart-card" key={item._id}>
+     <div className="cart-card" key={item.product._id}>
 
-      {/* IMAGE */}
       <img
-       src={item.product.image}
+       src={item.product.image || "https://via.placeholder.com/200"}
        className="cart-img"
       />
 
-
-
-      {/* INFO */}
       <div className="cart-info">
-
        <h3>{item.product.title}</h3>
        <p className="price">₹{item.product.price}</p>
 
-
-
-       {/* QTY */}
        <div className="qty">
 
         <button
          onClick={()=>updateQty(item.product._id,-1)}
-        >
-         −
-        </button>
+        >−</button>
 
         <span>{item.quantity}</span>
 
         <button
          onClick={()=>updateQty(item.product._id,1)}
-        >
-         +
-        </button>
+        >+</button>
 
        </div>
-
       </div>
 
-
-
-      {/* RIGHT SIDE */}
       <div className="cart-right">
 
        <p className="subtotal">
-        ₹{item.product.price * item.quantity}
+        ₹{(item.product.price||0)*item.quantity}
        </p>
 
        <button
@@ -176,21 +149,16 @@ useEffect(()=>{
 
    </div>
 
-
-
-   {/* SUMMARY */}
    <div className="cart-summary">
 
     <h3>Total: ₹{total}</h3>
 
     <button
- onClick={checkout}
- className="checkout-btn"
- disabled={loading}
->
- {loading ? "Processing..." : "Proceed To Checkout"}
-</button>
-    
+     onClick={checkout}
+     className="checkout-btn"
+    >
+     Proceed To Checkout
+    </button>
 
    </div>
 
