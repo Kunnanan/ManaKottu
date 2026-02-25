@@ -15,7 +15,7 @@ export default function Orders(){
   loadOrders()
  },[])
 
- const loadOrders=async()=>{
+ const loadOrders = async()=>{
   try{
    const res = await API.get("/orders/mine")
    setOrders(res.data)
@@ -27,10 +27,10 @@ export default function Orders(){
  }
 
  if(loading)
-  return <h2 style={{textAlign:"center",marginTop:60}}>Loading orders...</h2>
+  return <h2 className="center">Loading orders...</h2>
 
  if(!orders || orders.length===0)
-  return <h2 style={{textAlign:"center",marginTop:60}}>No orders yet 📦</h2>
+  return <h2 className="center">No orders yet 🛒</h2>
 
  return(
   <div className="orders-page">
@@ -39,46 +39,62 @@ export default function Orders(){
 
    <div className="orders-container">
 
-    {orders.map(order=>(
-     <div
-      key={order._id}
-      className="order-card"
-      onClick={()=>nav(`/orders/${order._id}`)}
-     >
+    {orders.map(order=>{
 
-      <div className="order-top">
-       <span className={`status ${order.status}`}>
-        {order.status}
-       </span>
-       <span className="order-id">
-        #{order._id.slice(-6)}
-       </span>
-      </div>
+     const totalItems = order.items.reduce(
+      (acc,i)=>acc+i.quantity,
+      0
+     )
 
-      <div className="order-items">
-       {order.items.slice(0,2).map(item=>(
-        <div key={item._id} className="mini-item">
-         <img src={item.product.image} />
-         <div>
-          <p>{item.product.title}</p>
-          <small>Qty: {item.quantity}</small>
-         </div>
+     return(
+      <div
+       key={order._id}
+       className="order-card"
+       onClick={()=>nav(`/orders/${order._id}`)}
+      >
+
+       <div className="order-top">
+
+        <div>
+         <h4>Order #{order._id.slice(-6)}</h4>
+         <p className={`status ${order.status}`}>
+          {order.status.toUpperCase()}
+         </p>
         </div>
-       ))}
 
-       {order.items.length > 2 && (
-        <p className="more-items">
-         +{order.items.length-2} more items
-        </p>
-       )}
+        <div className="order-total">
+         ₹{order.total}
+        </div>
+
+       </div>
+
+       <div className="order-preview">
+
+        {order.items.slice(0,3).map(item=>(
+         <img
+          key={item._id}
+          src={item.product.image}
+          className="preview-img"
+          alt={item.product.title}
+         />
+        ))}
+
+        {order.items.length>3 && (
+         <div className="more-items">
+          +{order.items.length-3}
+         </div>
+        )}
+
+       </div>
+
+       <div className="order-bottom">
+        <p>{totalItems} items</p>
+        <span className="view-link">View Details →</span>
+       </div>
+
       </div>
-
-      <div className="order-bottom">
-       <b>Total: ₹{order.total}</b>
-      </div>
-
-     </div>
-    ))}
+     )
+    })}
 
    </div>
 

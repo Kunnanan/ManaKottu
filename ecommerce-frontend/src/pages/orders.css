@@ -1,79 +1,103 @@
 .orders-page{
- padding:40px 8%;
+ background:#f5f6fa;
+ min-height:100vh;
+ padding:40px 20px;
+}
+
+.center{
+ text-align:center;
+ margin-top:40px;
 }
 
 .orders-title{
  margin-bottom:30px;
- font-size:28px;
 }
 
 .orders-container{
- display:grid;
+ display:flex;
+ flex-direction:column;
  gap:20px;
+ max-width:900px;
+ margin:auto;
 }
 
 .order-card{
- background:white;
- padding:20px;
+ background:#fff;
  border-radius:14px;
- box-shadow:0 8px 25px rgba(0,0,0,0.08);
+ padding:20px;
  cursor:pointer;
- transition:.3s;
+ box-shadow:0 5px 20px rgba(0,0,0,0.05);
+ transition:0.3s;
 }
 
 .order-card:hover{
- transform:translateY(-5px);
- box-shadow:0 15px 35px rgba(0,0,0,0.15);
+ transform:translateY(-3px);
+ box-shadow:0 8px 25px rgba(0,0,0,0.08);
 }
 
 .order-top{
  display:flex;
  justify-content:space-between;
+ align-items:center;
  margin-bottom:15px;
 }
 
 .status{
- padding:5px 12px;
- border-radius:20px;
- font-size:13px;
- text-transform:capitalize;
+ font-weight:600;
+ margin-top:5px;
 }
 
-.status.pending{ background:#fff3cd; color:#856404; }
-.status.paid{ background:#d4edda; color:#155724; }
-.status.cancelled{ background:#f8d7da; color:#721c24; }
-
-.order-id{
- font-size:13px;
- color:gray;
+.status.pending{
+ color:#ff9800;
 }
 
-.order-items{
+.status.paid{
+ color:#4caf50;
+}
+
+.status.cancelled{
+ color:#f44336;
+}
+
+.order-total{
+ font-weight:bold;
+ font-size:18px;
+}
+
+.order-preview{
  display:flex;
- flex-direction:column;
  gap:10px;
+ margin-bottom:15px;
 }
 
-.mini-item{
- display:flex;
- gap:12px;
- align-items:center;
-}
-
-.mini-item img{
- width:55px;
- height:55px;
+.preview-img{
+ width:60px;
+ height:60px;
  object-fit:cover;
  border-radius:8px;
-}
-
-.order-bottom{
- margin-top:15px;
- text-align:right;
- font-size:16px;
+ border:1px solid #eee;
 }
 
 .more-items{
- font-size:13px;
- color:gray;
+ width:60px;
+ height:60px;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ background:#111;
+ color:#fff;
+ border-radius:8px;
+ font-weight:bold;
+}
+
+.order-bottom{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ font-size:14px;
+ color:#555;
+}
+
+.view-link{
+ font-weight:600;
 }
