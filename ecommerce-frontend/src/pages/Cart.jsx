@@ -64,7 +64,7 @@ useEffect(()=>{
 
  try{
 
-  const items = cart.items.map(item=>({
+  const items = cart.items.filter(i=>i.product).map(item=>({
    product:item.product._id,
    quantity:item.quantity
   }))
@@ -97,7 +97,7 @@ useEffect(()=>{
 
 
  /* TOTAL */
- const total = cart.items.reduce(
+ const total = cart.items.filter(i=>i.product).reduce(
   (acc,i)=>acc+i.product.price*i.quantity,
   0
  )
