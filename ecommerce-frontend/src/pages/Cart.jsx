@@ -35,7 +35,7 @@ export default function Cart(){
  /* UPDATE QTY */
  const updateQty=async(id,change)=>{
   try{
-   await API.post("/cart/",{
+   await API.post("/cart/update",{
     productId:id,
     quantity:change
    })
@@ -115,7 +115,7 @@ export default function Cart(){
        <p className="price">₹{item.product.price}</p>
 
        <div className="qty">
-{/* 
+
         <button
          onClick={()=>updateQty(item.product._id,-1)}
         >−</button>
@@ -124,7 +124,7 @@ export default function Cart(){
 
         <button
          onClick={()=>updateQty(item.product._id,1)}
-        >+</button> */}
+        >+</button>
 
        </div>
       </div>
