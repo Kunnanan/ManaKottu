@@ -5,47 +5,42 @@ import toast from "react-hot-toast"
 
 export default function Cart(){
 
- const [cart,setCart]=useState(null)
- const [loading,setLoading]=useState(true)
-
  useEffect(()=>{
   document.title="Cart | ManaKottu"
-  loadCart()
  },[])
+
+ const [cart,setCart]=useState({items:[]})
+ const [loading,setLoading]=useState(true)
 
  /* LOAD CART */
  const loadCart=async()=>{
   try{
-   const res = await API.get("/cart")
-   setCart(res.data)
-  }catch(err){
+   const res=await API.get("/cart")
+
+   const safeItems=(res.data?.items || []).filter(i=>i?.product)
+
+   setCart({items:safeItems})
+  }catch{
    toast.error("Failed to load cart")
+   setCart({items:[]})
   }finally{
    setLoading(false)
   }
  }
 
+ useEffect(()=>{
+  loadCart()
+ },[])
+
  /* UPDATE QTY */
  const updateQty=async(id,change)=>{
   try{
-
-   const item = cart.items.find(i=>i.product._id===id)
-   if(!item) return
-
-   const newQty = item.quantity + change
-
-   if(newQty <= 0){
-    return removeItem(id)
-   }
-
-   await API.post("/cart/update",{
+   await API.post("/cart/",{
     productId:id,
-    quantity:newQty
+    quantity:change
    })
-
    loadCart()
-
-  }catch(err){
+  }catch{
    toast.error("Update failed")
   }
  }
@@ -62,25 +57,23 @@ export default function Cart(){
  }
 
  /* CHECKOUT */
- const checkout = async()=>{
-  if(!cart || cart.items.length===0)
+ const checkout=async()=>{
+  if(!cart.items.length)
    return toast.error("Cart empty")
 
   try{
 
-   const items = cart.items.map(i=>({
+   const items=cart.items.map(i=>({
     product:i.product._id,
     quantity:i.quantity
    }))
 
-   const res = await API.post("/orders/create",{items})
-
-   const orderId = res.data._id
+   const res=await API.post("/orders/create",{items})
 
    toast.success("Order created 🎉 Redirecting...")
 
    setTimeout(()=>{
-    window.location.href=`/orders/${orderId}`
+    window.location.href=`/orders/${res.data._id}`
    },1200)
 
   }catch(err){
@@ -90,15 +83,15 @@ export default function Cart(){
 
  /* LOADING */
  if(loading)
-  return <h2 style={{textAlign:"center",marginTop:50}}>Loading cart...</h2>
+  return <h2 style={{textAlign:"center"}}>Loading cart...</h2>
 
  /* EMPTY */
- if(!cart || cart.items.length===0)
-  return <h2 style={{textAlign:"center",marginTop:50}}>Your cart is empty 🛒</h2>
+ if(!cart.items.length)
+  return <h2 style={{textAlign:"center"}}>Your cart is empty 🛒</h2>
 
  /* TOTAL */
- const total = cart.items.reduce(
-  (sum,i)=> sum + i.product.price*i.quantity,
+ const total=cart.items.reduce(
+  (acc,i)=>acc+(i.product?.price||0)*i.quantity,
   0
  )
 
@@ -110,32 +103,36 @@ export default function Cart(){
    <div className="cart-container">
 
     {cart.items.map(item=>(
-     <div className="cart-card" key={item._id}>
+     <div className="cart-card" key={item.product._id}>
 
-      {/* IMAGE */}
       <img
-       src={item.product.image}
+       src={item.product.image || "https://via.placeholder.com/200"}
        className="cart-img"
-       alt={item.product.title}
       />
 
-      {/* INFO */}
       <div className="cart-info">
        <h3>{item.product.title}</h3>
        <p className="price">₹{item.product.price}</p>
 
        <div className="qty">
-        <button onClick={()=>updateQty(item.product._id,-1)}>−</button>
+{/* 
+        <button
+         onClick={()=>updateQty(item.product._id,-1)}
+        >−</button>
+
         <span>{item.quantity}</span>
-        <button onClick={()=>updateQty(item.product._id,1)}>+</button>
+
+        <button
+         onClick={()=>updateQty(item.product._id,1)}
+        >+</button> */}
+
        </div>
       </div>
 
-      {/* RIGHT */}
       <div className="cart-right">
 
        <p className="subtotal">
-        ₹{item.product.price * item.quantity}
+        ₹{(item.product.price||0)*item.quantity}
        </p>
 
        <button
@@ -152,7 +149,6 @@ export default function Cart(){
 
    </div>
 
-   {/* SUMMARY */}
    <div className="cart-summary">
 
     <h3>Total: ₹{total}</h3>
