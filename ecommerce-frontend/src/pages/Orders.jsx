@@ -1,48 +1,67 @@
 import { useEffect,useState } from "react"
 import { useNavigate } from "react-router-dom"
 import API from "../api/api"
-import toast from "react-hot-toast"
 import "./orders.css"
+import toast from "react-hot-toast"
 
 export default function Orders(){
+
+ useEffect(()=>{
+  document.title = "My Orders | ManaKottu"
+ },[])
 
  const [orders,setOrders]=useState([])
  const [loading,setLoading]=useState(true)
  const nav = useNavigate()
 
- useEffect(()=>{
-  document.title="My Orders | ManaKottu"
-  loadOrders()
- },[])
 
+
+ /* LOAD ORDERS */
  const loadOrders = async()=>{
   try{
    const res = await API.get("/orders/mine")
-   setOrders(res.data)
+   setOrders(res.data || [])
   }catch(err){
-   toast.error(err.response?.data || "Failed to load orders")
+   console.log(err)
+   toast.error("Failed to load orders")
   }finally{
    setLoading(false)
   }
  }
 
+ useEffect(()=>{
+  loadOrders()
+ },[])
+
+
+
+ /* LOADING STATE */
  if(loading)
   return <h2 className="center">Loading orders...</h2>
 
+
+
+ /* EMPTY STATE */
  if(!orders || orders.length===0)
   return <h2 className="center">No orders yet 🛒</h2>
+
+
 
  return(
   <div className="orders-page">
 
    <h2 className="orders-title">My Orders</h2>
 
+
+
    <div className="orders-container">
 
     {orders.map(order=>{
 
-     const totalItems = order.items.reduce(
-      (acc,i)=>acc+i.quantity,
+     const items = order.items || []
+
+     const totalItems = items.reduce(
+      (acc,i)=> acc + (i?.quantity || 0),
       0
      )
 
@@ -53,40 +72,48 @@ export default function Orders(){
        onClick={()=>nav(`/orders/${order._id}`)}
       >
 
+       {/* TOP */}
        <div className="order-top">
 
         <div>
-         <h4>Order #{order._id.slice(-6)}</h4>
-         <p className={`status ${order.status}`}>
-          {order.status.toUpperCase()}
+         <h4>Order #{order?._id?.slice(-6) || "000000"}</h4>
+
+         <p className={`status ${order?.status || "pending"}`}>
+          {(order?.status || "pending").toUpperCase()}
          </p>
         </div>
 
         <div className="order-total">
-         ₹{order.total}
+         ₹{order?.total || 0}
         </div>
 
        </div>
 
+
+
+       {/* IMAGES */}
        <div className="order-preview">
 
-        {order.items.slice(0,3).map(item=>(
+        {items.slice(0,3).map((item,i)=>(
          <img
-          key={item._id}
-          src={item.product.image}
+          key={i}
+          src={item?.product?.image || "/placeholder.png"}
           className="preview-img"
-          alt={item.product.title}
+          alt="product"
          />
         ))}
 
-        {order.items.length>3 && (
+        {items.length>3 && (
          <div className="more-items">
-          +{order.items.length-3}
+          +{items.length-3}
          </div>
         )}
 
        </div>
 
+
+
+       {/* BOTTOM */}
        <div className="order-bottom">
         <p>{totalItems} items</p>
         <span className="view-link">View Details →</span>
